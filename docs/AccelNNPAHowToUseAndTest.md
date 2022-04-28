@@ -10,12 +10,21 @@ The following CMake variable is required to build onnx-mlir for NNPA.
 
 ## Test
 
-Currently numerical tests are provided for NNPA. To run the same tests with CPU, appropriate ATOL and RTOL are required to pass the tests. They can be set as environment variable as shown below. Some tests with CPU are not supported in zDNN library used by NNPA. So, NNPA specific tests are provided in `test/accelerator/NNPA/numrical`. 
+Lit tests and numerical tests are provided for NNPA.
 
-- The same numerical tests with CPU
-  TEST_ATOL=0.01 TEST_RTOL=0.05 cmake --build . --config Release --target check-onnx-numerical
-  
-- zDNN supported tests for NNPA
-  cmake --build . --config Release --target check-onnx-numerical-nnpa
+- Lit tests
+When building for NNPA, lit tests for NNPA run by using the same command with CPU. The lit tests are included in ``test/mlir/accelerators/nnpa`.
+
+```
+cmake --build . --target check-onnx-lit
+```
+
+- Numerical tests
+
+Numerical tests for NNPA are provided in `test/accelerator/NNPA/numrical`. Currently tests for MatMul2D and Gemm are the same with CPU. In the tests for LSTM and GRU, different configurations supported by zDNN library used by NNPA. To pass the tests, appropriate ATOL and RTOL are set as environment variables.
+
+```
+cmake --build . --config Release --target check-onnx-numerical-nnpa
+```
 
  
