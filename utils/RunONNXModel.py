@@ -213,12 +213,47 @@ def generate_random_input(model, input_shapes):
                       "is unknown. Use --shape-info to set.")
                 print(shape_proto)
                 exit(1)
-        rinput = np.random.uniform(-1.0, 1.0,
+#        rinput = np.random.uniform(-1.0, 1.0,
+        rinput = np.random.uniform(-10.0, 10.0,
                                    explicit_shape).astype(np.float32)
         print("  - {} input's shape {}".format(ordinal(i + 1), rinput.shape))
         inputs.append(rinput)
     print("  done.\n")
     return (inputs, input_names)
+
+
+# Generate set for positions and labels
+def generate_box_labels_set(box_list, label_list):
+    # decimals=2 => 0.1234 -> 0.12
+    # box_labels = np.append(np.round(box_list, decimals=-1), label_list, axis=1) # yolov3
+    box_labels = np.append(np.round(box_list, decimals=2), label_list, axis=1) # ssd
+    print(box_labels)
+    # box_labels_argsort = np.argsort(box_labels[:,0])
+    # box_labels_sorted = box_labels[box_labels_argsort,:]
+    # box_sorted = box_labels_sorted[:,0:4]
+    # labels_sorted = box_labels_sorted[:,4]
+    # print("outs: bbox_labels sorted 200x5")
+    # print(box_labels_sorted)
+    # print(box_sorted)
+    # print(labels_sorted)
+    box_labels_set = set(map(tuple, box_labels.tolist()))
+    return box_labels_set
+
+# Check set including box and labels without considering ordering
+# Print intersections of outs and ref
+def check_box_labels(outs_bbox, outs_labels, ref_bbox, ref_labels):
+    outs_bbox_labels_set = generate_box_labels_set(outs_bbox, outs_labels)
+    ref_bbox_labels_set = generate_box_labels_set(ref_bbox, ref_labels)
+    intersec_set = ref_bbox_labels_set & outs_bbox_labels_set
+    ref_only_set = ref_bbox_labels_set - intersec_set
+    outs_only_set = outs_bbox_labels_set - intersec_set
+    print("intersec:")
+    print(intersec_set)
+    print("#intersection:" + str(len(intersec_set)) + "/" + str(len(ref_bbox_labels_set)))
+    print("ref_only_set:")
+    print(ref_only_set)
+    print("outs_only_set:")
+    print(outs_only_set)
 
 
 def warning(msg):
@@ -332,6 +367,10 @@ def main():
         # Print the output if required.
         if (args.print_output):
             for i, out in enumerate(outs):
+#                if i == 0:
+#                    np.set_printoptions(threshold=np.inf)
+#                else:
+#                    np.set_printoptions(threshold=1000)                    
                 print("The {} output {}:[{}x{}] is: \n {} \n".format(
                     ordinal(i + 1), output_names[i],
                     'x'.join([str(i) for i in out.shape]), out.dtype, out))
@@ -374,6 +413,28 @@ def main():
                 print("Invalid verify option")
                 exit(1)
 
+            # Compare output of models with reference for object detection
+            # position and labels
+            # Please comment out from here (to here) when you don't use
+            # Prepare data for model output
+            # Ex. outs[0] for positions : 1x200x4, outs[1] for labels:1x200)
+            #     outs_box: 200x4, outs_labels: 200x1
+            outs_bbox = np.reshape(outs[0], (outs[0].shape[1], outs[0].shape[2]))
+            outs_labels = np.reshape(outs[1], (outs[1].shape[1], 1)) # ssd
+            # outs_labels = np.zeros((outs[0].shape[1], 1)) # dummy labels for yolov3
+            print(outs_bbox)
+            print(outs_labels)
+
+            # ref_outs
+            ref_bbox = np.reshape(ref_outs[0], (ref_outs[0].shape[1], ref_outs[0].shape[2]))
+            ref_labels = np.reshape(ref_outs[1], (ref_outs[1].shape[1], 1)) # ssd
+            # ref_labels = np.zeros((ref_outs[0].shape[1], 1)) # dummy labels for yolov3
+            print(ref_bbox)
+            print(ref_labels)
+            # check position labels without considering ordering
+            check_box_labels(outs_bbox, outs_labels, ref_bbox, ref_labels)
+            # Please comment out to here
+            
             # For each output tensor, compare results.
             for i, name in enumerate(output_names):
                 print(
@@ -396,9 +457,14 @@ def main():
                 if mismatched_elements == 0:
                     print("  correct.\n".format(args.atol, args.rtol))
                 else:
-                    raise AssertionError(
+                    print(
                         "  mismatched elements {}/{}.\n".format(
                             mismatched_elements, total_elements))
+#                    raise AssertionError(
+#                        "  mismatched elements {}/{}.\n".format(
+#                            mismatched_elements, total_elements))
+
+
 
 
 if __name__ == '__main__':
