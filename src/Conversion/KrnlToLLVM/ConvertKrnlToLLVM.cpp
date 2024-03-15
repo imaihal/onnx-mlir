@@ -805,9 +805,12 @@ struct ConvertKrnlToLLVMPass
           "constants-to-file-total-threshold. Value is in KB."),
       llvm::cl::init(1.0)};
 
+  Option<bool> enableParallel{*this, "enable-parallel",
+      llvm::cl::desc("Enable parallelization"), llvm::cl::init(false)};
+
 private:
   std::string outputNameNoExt = "./model";
-  bool enableParallel;
+  //  bool enableParallel;
 };
 
 void ConvertKrnlToLLVMPass::runOnOperation() {
