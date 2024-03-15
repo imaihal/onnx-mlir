@@ -52,6 +52,34 @@ LogicalResult ZHighForkOp::inferShapes(
   return success();
 }
 
+// 
+// OperandRange ZHighForkOp::getEntrySuccessorOperands(RegionBranchPoint point) {
+//   assert(point == getBodyRegion() && "invalid region index");
+//   return getBodyOperands();
+// }
+// 
+// bool ZHighForkOp::areTypesCompatible(Type lhs, Type rhs) {
+//   const auto getValueOrTokenType = [](Type type) {
+//     if (auto value = llvm::dyn_cast<ValueType>(type))
+//       return value.getValueType();
+//     return type;
+//   };
+//   return getValueOrTokenType(lhs) == getValueOrTokenType(rhs);
+// }
+// 
+// void ZHighForkOp::getSuccessorRegions(RegionBranchPoint point,
+//                                     SmallVectorImpl<RegionSuccessor> &regions) {
+//   // The `body` region branch back to the parent operation.
+//   if (point == getBodyRegion()) {
+//     regions.push_back(RegionSuccessor(getBodyResults()));
+//     return;
+//   }
+// 
+//   // Otherwise the successor is the body region.
+//   regions.push_back(
+//       RegionSuccessor(&getBodyRegion(), getBodyRegion().getArguments()));
+// }
+
 //===----------------------------------------------------------------------===//
 // Builder: Referring to Async ExecuteOp
 //===----------------------------------------------------------------------===//

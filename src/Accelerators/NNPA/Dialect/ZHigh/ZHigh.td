@@ -20,6 +20,7 @@ include "src/Interface/ShapeHelperOpInterface.td"
 include "src/Interface/ShapeInferenceOpInterface.td"
 include "src/Interface/ResultTypeInferenceOpInterface.td"
 include "src/Interface/HasOnnxSubgraphOpInterface.td"
+include "mlir/Interfaces/ControlFlowInterfaces.td"
 include "src/IR/AttrBase.td"
 
 
@@ -930,7 +931,11 @@ def ZHighForkOp:ZHigh_Op<"Fork",
     [Pure, DeclareOpInterfaceMethods<ShapeInferenceOpInterface>,
     DeclareOpInterfaceMethods<ShapeHelperOpInterface>,
     DeclareOpInterfaceMethods<ResultTypeInferenceOpInterface>,
-    OpInterface<"mlir::HasOnnxSubgraphOpInterface">]> {
+//    DeclareOpInterfaceMethods<RegionBranchOpInterface,
+//                                 ["getRegionInvocationBounds",
+//                                  "getEntrySuccessorOperands"]>,
+    OpInterface<"mlir::HasOnnxSubgraphOpInterface">,
+    ]> {
   let summary = "ZHigh operation for forking threads.";
   let description = [{
     
